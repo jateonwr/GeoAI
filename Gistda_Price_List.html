@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ตารางอัตราค่าบริการข้อมูลจากดาวเทียม GISTDA ค้นหาและเปรียบเทียบราคาข้อมูลดาวเทียมทุกประเภทได้อย่างรวดเร็ว">
+    <title>GISTDA Satellite Imagery Price List</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent: #6366f1;
+            --accent-bg: #e0e7ff;
+            --accent-text: #4f46e5;
+            --table-header-bg: #0f172a;
+            --table-header-text: #ffffff;
+            --row-hover: #f1f5f9;
+            --row-zebra: #f8fafc;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --primary: #38bdf8;
+            --primary-hover: #0ea5e9;
+            --accent: #818cf8;
+            --accent-bg: #312e81;
+            --accent-text: #c7d2fe;
+            --table-header-bg: #020617;
+            --row-hover: #334155;
+            --row-zebra: #1e293b;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Sarabun', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            padding: 2rem 1rem;
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header section styling */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .controls-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Theme Toggle Button */
+        #theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.6rem;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+
+        #theme-toggle:hover {
+            background-color: var(--row-hover);
+            transform: scale(1.05);
+        }
+
+        /* Download Area */
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            box-shadow: var(--card-shadow);
+            border: none;
+            cursor: pointer;
+        }
+
+        .download-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .download-btn.secondary {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .download-btn.secondary:hover {
+            background: var(--row-hover);
+        }
+
+        /* Search and Tabs Panel */
+        .filter-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+
+        .search-box-container {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .search-box-container input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-box-container input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Tabbed category filters */
+        .tabs-container {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: thin;
+        }
+
+        .tabs-container::-webkit-scrollbar {
+            height: 4px;
+        }
+        .tabs-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+
+        .tab-btn {
+            background: var(--bg-color);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            white-space: nowrap;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .tab-btn:hover {
+            background-color: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        /* Table Card Container */
+        .table-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        /* Custom Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: var(--table-header-bg);
+            color: var(--table-header-text);
+            font-weight: 600;
+            padding: 1rem;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            user-select: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        th.sort-asc::after {
+            content: ' ▲';
+            font-size: 0.75rem;
+        }
+
+        th.sort-desc::after {
+            content: ' ▼';
+            font-size: 0.75rem;
+        }
+
+        td {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:nth-child(even) td {
+            background-color: var(--row-zebra);
+        }
+
+        tr:hover td {
+            background-color: var(--row-hover);
+        }
+
+        /* Badge and value stylings */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-category {
+            background: var(--accent-bg);
+            color: var(--accent-text);
+        }
+
+        .badge-na {
+            background: #f1f5f9;
+            color: #94a3b8;
+            font-weight: normal;
+        }
+        
+        [data-theme="dark"] .badge-na {
+            background: #334155;
+            color: #64748b;
+        }
+
+        .price-val {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-muted-cell {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: var(--text-muted);
+            display: none;
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            stroke: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        /* Footer Notes styling */
+        .footer-note {
+            margin-top: 1.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: var(--card-shadow);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .footer-note div {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .controls-header {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .filter-panel {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-title">
+                <h1>GISTDA Satellite Price List</h1>
+                <p>ตารางอัตราค่าบริการข้อมูลจากดาวเทียม ค้นหาและเปรียบเทียบข้อมูล</p>
+            </div>
+            <div class="controls-header">
+                <!-- Theme toggle -->
+                <button id="theme-toggle" aria-label="Toggle Dark Mode">
+                    <svg id="theme-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                    <svg id="theme-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                </button>
+                <!-- Downloads -->
+                <a href="Gistda_Price_List.xlsx" class="download-btn" id="download-excel-btn" download>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>ดาวน์โหลด Excel</span>
+                </a>
+                <a href="Gistda_Price_List.csv" class="download-btn secondary" id="download-csv-btn" download>
+                    <span>CSV</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Filters Panel -->
+        <div class="filter-panel">
+            <div class="search-box-container">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" id="search-input" placeholder="ค้นหาตามดาวเทียม, ความละเอียด, โหมดเซ็นเซอร์, โพลาไรเซชัน, หรือรายละเอียดสินค้า..." aria-label="ค้นหาข้อมูลดาวเทียม">
+            </div>
+            
+            <div class="tabs-container" id="category-tabs">
+                <!-- Javascript will render tabs here -->
+            </div>
+        </div>
+
+        <!-- Table Card -->
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table id="price-table">
+                    <thead>
+                        <tr>
+                            <th id="th-category" onclick="sortTable(0)">หมวดหมู่</th>
+                            <th id="th-satellite" onclick="sortTable(1)">ดาวเทียม / ระบบ</th>
+                            <th id="th-mode" onclick="sortTable(2)">โหมด / เซ็นเซอร์</th>
+                            <th id="th-res" onclick="sortTable(3)">ความละเอียด</th>
+                            <th id="th-pol" onclick="sortTable(4)">Polarization</th>
+                            <th id="th-archive" onclick="sortTable(5)" class="text-right">ราคาคลัง / SLC (บาท)</th>
+                            <th id="th-tasking" onclick="sortTable(6)" class="text-right">ราคาสั่งถ่าย / Path (บาท)</th>
+                            <th id="th-unit" onclick="sortTable(7)" class="text-center">หน่วย</th>
+                            <th id="th-notes" onclick="sortTable(8)">หมายเหตุ / รายละเอียด</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Dynamic rows will be rendered here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                <p>ไม่พบข้อมูลตามคำค้นหาที่ระบุ</p>
+            </div>
+        </div>
+
+        <!-- Footer Note -->
+        <div class="footer-note">
+            <div>
+                <strong>หมายเหตุเพิ่มเติม:</strong>
+            </div>
+            <div>
+                • อัตราค่าบริการดังกล่าวข้างต้นยังไม่รวมภาษีมูลค่าเพิ่ม (VAT 7%)
+            </div>
+            <div>
+                • SLC = Single Look Complex (สำหรับผลิตภัณฑ์ระบบเรดาร์), Path = Path Image
+            </div>
+            <div>
+                • หากต้องการข้อมูลฉบับเต็มหรือใบเสนอราคา กรุณาติดต่อ ฝ่ายพัฒนาธุรกิจและการบริการ GISTDA โทร. 0 2143 9593, 0 2141 4564-66 หรืออีเมล usd@gistda.or.th
+            </div>
+        </div>
+    </div>
+
+    <!-- Data and Engine -->
+    <script>
+        const dataset = [{"Category": "รายละเอียดสูงมาก (30 – 50 ซม.)", "Satellite_System": "Pléiades NEO", "Mode_Sensor": "", "Resolution": "30 cm.", "Polarization": "", "Archive_SLC_Price": "880", "Tasking_PathImage_Price": "1,270", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูงมาก (30 – 50 ซม.)", "Satellite_System": "WorldView-4", "Mode_Sensor": "", "Resolution": "30 cm.", "Polarization": "", "Archive_SLC_Price": "920", "Tasking_PathImage_Price": "1,560", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูงมาก (30 – 50 ซม.)", "Satellite_System": "SuperView-2", "Mode_Sensor": "", "Resolution": "42 cm.", "Polarization": "", "Archive_SLC_Price": "700", "Tasking_PathImage_Price": "1,100", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูงมาก (30 – 50 ซม.)", "Satellite_System": "WorldView-1", "Mode_Sensor": "", "Resolution": "50 cm.", "Polarization": "", "Archive_SLC_Price": "700", "Tasking_PathImage_Price": "1,100", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูงมาก (30 – 50 ซม.)", "Satellite_System": "WorldView-2", "Mode_Sensor": "", "Resolution": "50 cm.", "Polarization": "", "Archive_SLC_Price": "700", "Tasking_PathImage_Price": "1,100", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูงมาก (30 – 50 ซม.)", "Satellite_System": "WorldView-3", "Mode_Sensor": "", "Resolution": "50 cm.", "Polarization": "", "Archive_SLC_Price": "700", "Tasking_PathImage_Price": "1,100", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูงมาก (30 – 50 ซม.)", "Satellite_System": "GeoEye-1", "Mode_Sensor": "", "Resolution": "50 cm.", "Polarization": "", "Archive_SLC_Price": "700", "Tasking_PathImage_Price": "1,100", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูงมาก (30 – 50 ซม.)", "Satellite_System": "Pléiades", "Mode_Sensor": "", "Resolution": "50 cm.", "Polarization": "", "Archive_SLC_Price": "490", "Tasking_PathImage_Price": "830", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูงมาก (30 – 50 ซม.)", "Satellite_System": "EarthScanner", "Mode_Sensor": "", "Resolution": "50 cm.", "Polarization": "", "Archive_SLC_Price": "400", "Tasking_PathImage_Price": "800", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูงมาก (30 – 50 ซม.)", "Satellite_System": "SuperView-1", "Mode_Sensor": "", "Resolution": "50 cm.", "Polarization": "", "Archive_SLC_Price": "500", "Tasking_PathImage_Price": "900", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูงมาก (30 – 50 ซม.)", "Satellite_System": "KOMPSAT-3", "Mode_Sensor": "", "Resolution": "50 cm.", "Polarization": "", "Archive_SLC_Price": "400", "Tasking_PathImage_Price": "700", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูงมาก (30 – 50 ซม.)", "Satellite_System": "SKYSAT", "Mode_Sensor": "", "Resolution": "50 cm.", "Polarization": "", "Archive_SLC_Price": "300", "Tasking_PathImage_Price": "560", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 1,250 ตร.กม. / สั่งถ่าย: โปรดติดต่อเจ้าหน้าที่ | เข้าดูผ่าน API/Explorer"}, {"Category": "รายละเอียดสูง (60 ซม. – 2 ม.)", "Satellite_System": "QuickBird", "Mode_Sensor": "", "Resolution": "60 cm.", "Polarization": "", "Archive_SLC_Price": "700", "Tasking_PathImage_Price": "N/A", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม."}, {"Category": "รายละเอียดสูง (60 ซม. – 2 ม.)", "Satellite_System": "GaoFen-7", "Mode_Sensor": "", "Resolution": "65 cm.", "Polarization": "", "Archive_SLC_Price": "400", "Tasking_PathImage_Price": "700", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูง (60 ซม. – 2 ม.)", "Satellite_System": "Jilin", "Mode_Sensor": "", "Resolution": "75 cm.", "Polarization": "", "Archive_SLC_Price": "300", "Tasking_PathImage_Price": "600", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูง (60 ซม. – 2 ม.)", "Satellite_System": "DailyVision", "Mode_Sensor": "", "Resolution": "75 cm.", "Polarization": "", "Archive_SLC_Price": "300", "Tasking_PathImage_Price": "600", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูง (60 ซม. – 2 ม.)", "Satellite_System": "GaoFen-2", "Mode_Sensor": "", "Resolution": "80 cm.", "Polarization": "", "Archive_SLC_Price": "300", "Tasking_PathImage_Price": "400", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม. / สั่งถ่าย: 100 ตร.กม. | ราคา Level Primary (PAN, MS, Pansharpened)"}, {"Category": "รายละเอียดสูง (60 ซม. – 2 ม.)", "Satellite_System": "IKONOS", "Mode_Sensor": "", "Resolution": "1 m.", "Polarization": "", "Archive_SLC_Price": "400", "Tasking_PathImage_Price": "N/A", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 25 ตร.กม."}, {"Category": "รายละเอียดสูง (60 ซม. – 2 ม.)", "Satellite_System": "Video Constellation", "Mode_Sensor": "", "Resolution": "1 m.", "Polarization": "", "Archive_SLC_Price": "142,500", "Tasking_PathImage_Price": "285,000", "Unit": "บาท/30 วินาที", "Notes": "ถ่ายภาพเคลื่อนไหวในรูปแบบวิดีโอและภาพกลางคืน (จำกัดความยาว 30 วินาที)"}, {"Category": "รายละเอียดสูง (60 ซม. – 2 ม.)", "Satellite_System": "Night Imaging", "Mode_Sensor": "", "Resolution": "1 m.", "Polarization": "", "Archive_SLC_Price": "800", "Tasking_PathImage_Price": "1,400", "Unit": "บาท/ตร.กม.", "Notes": "ถ่ายภาพเคลื่อนไหวในรูปแบบวิดีโอและภาพกลางคืน | พื้นที่สั่งขั้นต่ำ คลัง/สั่งถ่าย: 100 ตร.กม. | ความกว้างแนวถ่ายภาพอย่างน้อย 5 กม."}, {"Category": "รายละเอียดสูง (60 ซม. – 2 ม.)", "Satellite_System": "SPOT-6", "Mode_Sensor": "", "Resolution": "1.5 m.", "Polarization": "", "Archive_SLC_Price": "190", "Tasking_PathImage_Price": "230", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 100 ตร.กม. / สั่งถ่าย: 500 ตร.กม."}, {"Category": "รายละเอียดสูง (60 ซม. – 2 ม.)", "Satellite_System": "SPOT-7", "Mode_Sensor": "", "Resolution": "1.5 m.", "Polarization": "", "Archive_SLC_Price": "190", "Tasking_PathImage_Price": "230", "Unit": "บาท/ตร.กม.", "Notes": "พื้นที่สั่งขั้นต่ำ คลัง: 100 ตร.กม. / สั่งถ่าย: 500 ตร.กม."}, {"Category": "รายละเอียดสูง (60 ซม. – 2 ม.)", "Satellite_System": "ไทยโชต", "Mode_Sensor": "", "Resolution": "2 m.", "Polarization": "", "Archive_SLC_Price": "700", "Tasking_PathImage_Price": "6,500", "Unit": "บาท/ภาพ", "Notes": "ราคาที่ปรับ Orthorectification แล้ว ราคา 910 บาท/ภาพ"}, {"Category": "รายละเอียดปานกลาง (> 2 ม.)", "Satellite_System": "LANDSAT-5", "Mode_Sensor": "", "Resolution": "30 m.", "Polarization": "", "Archive_SLC_Price": "150", "Tasking_PathImage_Price": "N/A", "Unit": "บาท/ภาพ", "Notes": "คิดเฉพาะค่าดำเนินการผลิตข้อมูลจากคลังข้อมูล | Level 1T (7 Bands)"}, {"Category": "รายละเอียดปานกลาง (> 2 ม.)", "Satellite_System": "LANDSAT-7", "Mode_Sensor": "", "Resolution": "30 m.", "Polarization": "", "Archive_SLC_Price": "150", "Tasking_PathImage_Price": "N/A", "Unit": "บาท/ภาพ", "Notes": "คิดเฉพาะค่าดำเนินการผลิตข้อมูลจากคลังข้อมูล | Level 1T (8 Bands)"}, {"Category": "รายละเอียดปานกลาง (> 2 ม.)", "Satellite_System": "LANDSAT-8", "Mode_Sensor": "", "Resolution": "30 m.", "Polarization": "", "Archive_SLC_Price": "150", "Tasking_PathImage_Price": "N/A", "Unit": "บาท/ภาพ", "Notes": "หากให้ สทอภ. ดาวน์โหลด คิดค่าดำเนินการ 150 บาท/ภาพ | Level 1T (11 Bands)"}, {"Category": "รายละเอียดปานกลาง (> 2 ม.)", "Satellite_System": "LANDSAT-9", "Mode_Sensor": "", "Resolution": "30 m.", "Polarization": "", "Archive_SLC_Price": "150", "Tasking_PathImage_Price": "N/A", "Unit": "บาท/ภาพ", "Notes": "หากให้ สทอภ. ดาวน์โหลด คิดค่าดำเนินการ 150 บาท/ภาพ | Level 1T (11 Bands)"}, {"Category": "รายละเอียดปานกลาง (> 2 ม.)", "Satellite_System": "PLANETSCOPE", "Mode_Sensor": "", "Resolution": "3 m.", "Polarization": "", "Archive_SLC_Price": "180", "Tasking_PathImage_Price": "240", "Unit": "บาท/ตร.กม./ปี", "Notes": "คลัง: Access+Download, ติดตาม: Monitoring | สัญญา 1 ปี | พื้นที่สั่งขั้นต่ำ 100 ตร.กม. | ดูและดาวน์โหลดผ่าน Planet Explorer, Planet API, Desktop GIS"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "Standard", "Resolution": "25 m.", "Polarization": "", "Archive_SLC_Price": "57,600", "Tasking_PathImage_Price": "57,600", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "Spotlight A", "Resolution": "1 m.", "Polarization": "", "Archive_SLC_Price": "134,400", "Tasking_PathImage_Price": "134,400", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "Utra-Fine", "Resolution": "3 m.", "Polarization": "", "Archive_SLC_Price": "86,400", "Tasking_PathImage_Price": "86,400", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "Wide Utra-Fine", "Resolution": "3 m.", "Polarization": "", "Archive_SLC_Price": "124,800", "Tasking_PathImage_Price": "124,800", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "Multi-Look Fine", "Resolution": "8 m.", "Polarization": "", "Archive_SLC_Price": "67,200", "Tasking_PathImage_Price": "67,200", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "Wide Multi-Look Fine", "Resolution": "8 m.", "Polarization": "", "Archive_SLC_Price": "120,000", "Tasking_PathImage_Price": "120,000", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "Fine", "Resolution": "8 m.", "Polarization": "", "Archive_SLC_Price": "57,600", "Tasking_PathImage_Price": "57,600", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "Wide", "Resolution": "30 m.", "Polarization": "", "Archive_SLC_Price": "57,600", "Tasking_PathImage_Price": "57,600", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "ScanSAR Narrow", "Resolution": "50 m.", "Polarization": "", "Archive_SLC_Price": "N/A", "Tasking_PathImage_Price": "57,600", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "ScanSAR Wide", "Resolution": "100 m.", "Polarization": "", "Archive_SLC_Price": "N/A", "Tasking_PathImage_Price": "57,600", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "Extended High, Low", "Resolution": "25 m.", "Polarization": "", "Archive_SLC_Price": "57,600", "Tasking_PathImage_Price": "57,600", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "Fine Quad-Pol", "Resolution": "8 m.", "Polarization": "", "Archive_SLC_Price": "86,400", "Tasking_PathImage_Price": "N/A", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (RADARSAT-2)", "Satellite_System": "RADARSAT-2 (C band)", "Mode_Sensor": "Wide Fine Quad-Pol", "Resolution": "8 m.", "Polarization": "", "Archive_SLC_Price": "124,800", "Tasking_PathImage_Price": "N/A", "Unit": "บาท/ภาพ", "Notes": "ราคา SLC vs Path Image"}, {"Category": "ระบบเรดาร์ (TerraSAR X)", "Satellite_System": "TerraSar X (X band)", "Mode_Sensor": "Staring Spotlight (ST)", "Resolution": "0.25 m.", "Polarization": "", "Archive_SLC_Price": "162,630", "Tasking_PathImage_Price": "325,260", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (TerraSAR X)", "Satellite_System": "TerraSar X (X band)", "Mode_Sensor": "High Res Spotlight (HS)", "Resolution": "1 m.", "Polarization": "", "Archive_SLC_Price": "139,230", "Tasking_PathImage_Price": "278,460", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (TerraSAR X)", "Satellite_System": "TerraSar X (X band)", "Mode_Sensor": "Spotlight", "Resolution": "2 m.", "Polarization": "", "Archive_SLC_Price": "99,450", "Tasking_PathImage_Price": "198,900", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (TerraSAR X)", "Satellite_System": "TerraSar X (X band)", "Mode_Sensor": "StripMap", "Resolution": "3 m.", "Polarization": "", "Archive_SLC_Price": "69,030", "Tasking_PathImage_Price": "138,060", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (TerraSAR X)", "Satellite_System": "TerraSar X (X band)", "Mode_Sensor": "ScanSAR", "Resolution": "18.5 m.", "Polarization": "", "Archive_SLC_Price": "40,950", "Tasking_PathImage_Price": "81,900", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (TerraSAR X)", "Satellite_System": "TerraSar X (X band)", "Mode_Sensor": "Wide ScanSAR", "Resolution": "40 m.", "Polarization": "", "Archive_SLC_Price": "40,950", "Tasking_PathImage_Price": "81,900", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (COSMO SkyMed)", "Satellite_System": "COSMO SkyMed (X band)", "Mode_Sensor": "Spotlight-2", "Resolution": "1x1 m.", "Polarization": "HH, VV", "Archive_SLC_Price": "N/A", "Tasking_PathImage_Price": "180,000", "Unit": "บาท/ภาพ", "Notes": "New Acquisition เท่านั้น"}, {"Category": "ระบบเรดาร์ (COSMO SkyMed)", "Satellite_System": "COSMO SkyMed (X band)", "Mode_Sensor": "StripMap Himage", "Resolution": "3 x 3 – 5 x 5 m.", "Polarization": "HH, HV, VH, VV", "Archive_SLC_Price": "N/A", "Tasking_PathImage_Price": "93,000", "Unit": "บาท/ภาพ", "Notes": "New Acquisition เท่านั้น"}, {"Category": "ระบบเรดาร์ (COSMO SkyMed)", "Satellite_System": "COSMO SkyMed (X band)", "Mode_Sensor": "StripMap PingPong", "Resolution": "10 x 12 – 20 x 20 m.", "Polarization": "HH,VV หรือ HH,HV หรือ VV,VH", "Archive_SLC_Price": "N/A", "Tasking_PathImage_Price": "68,000", "Unit": "บาท/ภาพ", "Notes": "2 ช่องสัญญาณ polarimattric | New Acquisition เท่านั้น"}, {"Category": "ระบบเรดาร์ (COSMO SkyMed)", "Satellite_System": "COSMO SkyMed (X band)", "Mode_Sensor": "ScanSAR Wide", "Resolution": "14 x 22 – 30 x 30 m.", "Polarization": "HH, HV, VH, VV", "Archive_SLC_Price": "N/A", "Tasking_PathImage_Price": "78,000", "Unit": "บาท/ภาพ", "Notes": "New Acquisition เท่านั้น"}, {"Category": "ระบบเรดาร์ (COSMO SkyMed)", "Satellite_System": "COSMO SkyMed (X band)", "Mode_Sensor": "ScanSAR Huge", "Resolution": "14 x 38 – 100 x 100 m.", "Polarization": "HH, HV, VH, VV", "Archive_SLC_Price": "N/A", "Tasking_PathImage_Price": "78,000", "Unit": "บาท/ภาพ", "Notes": "New Acquisition เท่านั้น"}, {"Category": "ระบบเรดาร์ (GaoFen-3)", "Satellite_System": "GaoFen-3 (C band)", "Mode_Sensor": "Spotlight (SL)", "Resolution": "1 m.", "Polarization": "HH, VV", "Archive_SLC_Price": "116,400", "Tasking_PathImage_Price": "180,500", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (GaoFen-3)", "Satellite_System": "GaoFen-3 (C band)", "Mode_Sensor": "Ultra-fine Stripmap (UFS)", "Resolution": "3 m.", "Polarization": "HH, VV", "Archive_SLC_Price": "68,900", "Tasking_PathImage_Price": "118,800", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (GaoFen-3)", "Satellite_System": "GaoFen-3 (C band)", "Mode_Sensor": "Fine Stripmap (FSI)", "Resolution": "5 m.", "Polarization": "HH, VV", "Archive_SLC_Price": "64,200", "Tasking_PathImage_Price": "95,000", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (GaoFen-3)", "Satellite_System": "GaoFen-3 (C band)", "Mode_Sensor": "Wide Fine Stripmap (FSII)", "Resolution": "10 m.", "Polarization": "HH, HV / VV, VH", "Archive_SLC_Price": "64,200", "Tasking_PathImage_Price": "90,300", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (GaoFen-3)", "Satellite_System": "GaoFen-3 (C band)", "Mode_Sensor": "Standard Stripmap (SS)", "Resolution": "25 m.", "Polarization": "HH, HV / VV, VH", "Archive_SLC_Price": "54,700", "Tasking_PathImage_Price": "85,500", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (GaoFen-3)", "Satellite_System": "GaoFen-3 (C band)", "Mode_Sensor": "Narrow ScanSAR (NSC)", "Resolution": "50 m.", "Polarization": "HH, HV / VV, VH", "Archive_SLC_Price": "32,100", "Tasking_PathImage_Price": "42,800", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (GaoFen-3)", "Satellite_System": "GaoFen-3 (C band)", "Mode_Sensor": "Wide ScanSAR (WSC)", "Resolution": "100 m.", "Polarization": "HH, HV / VV, VH", "Archive_SLC_Price": "32,100", "Tasking_PathImage_Price": "45,800", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (GaoFen-3)", "Satellite_System": "GaoFen-3 (C band)", "Mode_Sensor": "Quad-pol Stripmap (QPSI)", "Resolution": "8 m.", "Polarization": "HH, HV / VV, VH", "Archive_SLC_Price": "71,300", "Tasking_PathImage_Price": "137,800", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (GaoFen-3)", "Satellite_System": "GaoFen-3 (C band)", "Mode_Sensor": "Wide Quad-pol Stripmap (QPSII)", "Resolution": "25 m.", "Polarization": "HH, HV / VV, VH", "Archive_SLC_Price": "71,300", "Tasking_PathImage_Price": "137,800", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (GaoFen-3)", "Satellite_System": "GaoFen-3 (C band)", "Mode_Sensor": "Wave (WAV)", "Resolution": "10 m.", "Polarization": "HH, HV / VV, VH", "Archive_SLC_Price": "10,700", "Tasking_PathImage_Price": "14,300", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (GaoFen-3)", "Satellite_System": "GaoFen-3 (C band)", "Mode_Sensor": "Global Observation (GLO)", "Resolution": "500 m.", "Polarization": "HH, HV / VV, VH", "Archive_SLC_Price": "10,700", "Tasking_PathImage_Price": "14,300", "Unit": "บาท/ภาพ", "Notes": ""}, {"Category": "ระบบเรดาร์ (GaoFen-3)", "Satellite_System": "GaoFen-3 (C band)", "Mode_Sensor": "Extended Incidence Angle (EXT)", "Resolution": "25 m.", "Polarization": "HH, HV / VV, VH", "Archive_SLC_Price": "42,800", "Tasking_PathImage_Price": "57,000", "Unit": "บาท/ภาพ", "Notes": ""}];
+
+        // UI state variables
+        let currentFilter = "ทั้งหมด";
+        let searchQuery = "";
+        let sortColumn = -1;
+        let sortAsc = true;
+
+        // Dark mode setup
+        const themeToggle = document.getElementById("theme-toggle");
+        const sunIcon = document.getElementById("theme-sun");
+        const moonIcon = document.getElementById("theme-moon");
+
+        // Init dark/light theme
+        if (localStorage.getItem("theme") === "dark" || 
+            (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.setAttribute("data-theme", "dark");
+            sunIcon.style.display = "block";
+            moonIcon.style.display = "none";
+        }
+
+        themeToggle.addEventListener("click", () => {
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            if (currentTheme === "dark") {
+                document.documentElement.removeAttribute("data-theme");
+                localStorage.setItem("theme", "light");
+                sunIcon.style.display = "none";
+                moonIcon.style.display = "block";
+            } else {
+                document.documentElement.setAttribute("data-theme", "dark");
+                localStorage.setItem("theme", "dark");
+                sunIcon.style.display = "block";
+                moonIcon.style.display = "none";
+            }
+        });
+
+        // Generate category tabs dynamically
+        const categories = ["ทั้งหมด", ...new Set(dataset.map(item => item.Category))];
+        const tabsContainer = document.getElementById("category-tabs");
+        
+        categories.forEach((cat, index) => {
+            const btn = document.createElement("button");
+            btn.className = `tab-btn ${index === 0 ? 'active' : ''}`;
+            btn.textContent = cat;
+            btn.setAttribute("id", `tab-btn-${index}`);
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                currentFilter = cat;
+                renderTable();
+            });
+            tabsContainer.appendChild(btn);
+        });
+
+        // Price formatting helper
+        function formatPrice(val) {
+            if (!val || val === "N/A" || val === "") return `<span class="badge badge-na">N/A</span>`;
+            // Check if numerical
+            const clean = val.replace(/,/g, '');
+            if (!isNaN(clean)) {
+                return parseFloat(clean).toLocaleString('th-TH');
+            }
+            return val;
+        }
+
+        // Render Table function
+        function renderTable() {
+            const tbody = document.getElementById("table-body");
+            const emptyState = document.getElementById("empty-state");
+            tbody.innerHTML = "";
+
+            // Filter data
+            let filtered = dataset.filter(item => {
+                // Tab filter
+                const matchesTab = currentFilter === "ทั้งหมด" || item.Category === currentFilter;
+                
+                // Search filter
+                const searchLower = searchQuery.toLowerCase();
+                const matchesSearch = !searchQuery || 
+                    item.Category.toLowerCase().includes(searchLower) ||
+                    item.Satellite_System.toLowerCase().includes(searchLower) ||
+                    item.Mode_Sensor.toLowerCase().includes(searchLower) ||
+                    item.Resolution.toLowerCase().includes(searchLower) ||
+                    item.Polarization.toLowerCase().includes(searchLower) ||
+                    item.Notes.toLowerCase().includes(searchLower);
+
+                return matchesTab && matchesSearch;
+            });
+
+            // Sort data if sortColumn is active
+            if (sortColumn >= 0) {
+                filtered.sort((a, b) => {
+                    let valA = getSortValue(a, sortColumn);
+                    let valB = getSortValue(b, sortColumn);
+
+                    if (valA < valB) return sortAsc ? -1 : 1;
+                    if (valA > valB) return sortAsc ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            // Render rows
+            if (filtered.length === 0) {
+                emptyState.style.display = "block";
+            } else {
+                emptyState.style.display = "none";
+                filtered.forEach((item, rIdx) => {
+                    const tr = document.createElement("tr");
+                    tr.setAttribute("id", `row-${rIdx}`);
+                    
+                    tr.innerHTML = `
+                        <td><span class="badge badge-category">${item.Category}</span></td>
+                        <td><strong>${item.Satellite_System}</strong></td>
+                        <td class="${item.Mode_Sensor ? '' : 'text-muted-cell'}">${item.Mode_Sensor || '-'}</td>
+                        <td class="text-center">${item.Resolution}</td>
+                        <td class="text-center ${item.Polarization ? '' : 'text-muted-cell'}">${item.Polarization || '-'}</td>
+                        <td class="price-val text-right">${formatPrice(item.Archive_SLC_Price)}</td>
+                        <td class="price-val text-right">${formatPrice(item.Tasking_PathImage_Price)}</td>
+                        <td class="text-center text-muted-cell">${item.Unit}</td>
+                        <td class="text-muted-cell">${item.Notes || '-'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        // Helper to extract value for sorting
+        function getSortValue(item, index) {
+            switch(index) {
+                case 0: return item.Category;
+                case 1: return item.Satellite_System;
+                case 2: return item.Mode_Sensor;
+                case 3: 
+                    // Parse resolution logic
+                    let num = parseFloat(item.Resolution);
+                    if (item.Resolution.includes("cm")) num = num / 100.0;
+                    return num;
+                case 4: return item.Polarization;
+                case 5: 
+                    const arch = item.Archive_SLC_Price.replace(/,/g, '');
+                    return isNaN(arch) ? -1 : parseFloat(arch);
+                case 6: 
+                    const task = item.Tasking_PathImage_Price.replace(/,/g, '');
+                    return isNaN(task) ? -1 : parseFloat(task);
+                case 7: return item.Unit;
+                case 8: return item.Notes;
+                default: return "";
+            }
+        }
+
+        // Sort table logic
+        function sortTable(columnIndex) {
+            const thElements = document.querySelectorAll("th");
+            
+            if (sortColumn === columnIndex) {
+                sortAsc = !sortAsc;
+            } else {
+                sortColumn = columnIndex;
+                sortAsc = true;
+            }
+
+            // Update header UI
+            thElements.forEach((th, idx) => {
+                th.classList.remove("sort-asc", "sort-desc");
+                if (idx === columnIndex) {
+                    th.classList.add(sortAsc ? "sort-asc" : "sort-desc");
+                }
+            });
+
+            renderTable();
+        }
+
+        // Event listener for search
+        document.getElementById("search-input").addEventListener("input", (e) => {
+            searchQuery = e.target.value;
+            renderTable();
+        });
+
+        // Initial render
+        renderTable();
+    </script>
+</body>
+</html>
