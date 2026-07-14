@@ -1,0 +1,75 @@
+%% WUE.py — Water Use Efficiency of Thailand (MODIS / Google Earth Engine)
+%% Import in draw.io:  Arrange > Insert > Advanced > Mermaid  (paste this whole file)
+%% WUE = annual GPP / annual ET  (g C / kg H2O)
+flowchart TD
+
+    START([Start: python WUE.py]) --> AUTH
+
+    subgraph INIT["1 - Initialise"]
+        AUTH["ee.Authenticate one time<br/>then ee.Initialize<br/>project = physiographic-regions"]
+        CFG["Config<br/>YEAR = 2024<br/>START = 2024-01-01<br/>END = 2025-01-01"]
+        AUTH --> CFG
+    end
+
+    CFG --> AOI["Area of interest<br/>USDOS/LSIB_SIMPLE/2017<br/>filter country_na == Thailand<br/>-> geometry (thailand)"]
+
+    subgraph ETB["2a - ET branch  (MOD16A2)"]
+        ET_COL["ImageCollection<br/>MODIS/061/MOD16A2<br/>band ET  (8-day, 500 m)"]
+        ET_FIL["filterBounds thailand<br/>filterDate START..END<br/>-> 46 scenes"]
+        ET_MASK["mask fill values<br/>keep ET &lt;= 32700"]
+        ET_SUM["sum over year"]
+        ET_SCALE["multiply 0.1<br/>-> ET_sum  (mm/yr = kg H2O/m2/yr)"]
+        ET_COL --> ET_FIL --> ET_MASK --> ET_SUM --> ET_SCALE
+    end
+
+    subgraph GPPB["2b - GPP branch  (MOD17A2H)"]
+        GPP_COL["ImageCollection<br/>MODIS/061/MOD17A2H<br/>band Gpp  (8-day, 500 m)"]
+        GPP_FIL["filterBounds thailand<br/>filterDate START..END<br/>-> 46 scenes"]
+        GPP_MASK["mask fill values<br/>keep Gpp &lt;= 30000"]
+        GPP_SUM["sum over year"]
+        GPP_SCALE["multiply 0.0001<br/>-> GPP_sum  (kg C/m2/yr)"]
+        GPP_COL --> GPP_FIL --> GPP_MASK --> GPP_SUM --> GPP_SCALE
+    end
+
+    AOI --> ET_COL
+    AOI --> GPP_COL
+
+    ET_SCALE --> WUE
+    GPP_SCALE --> WUE
+
+    subgraph CALC["3 - Compute WUE"]
+        WUE["WUE = GPP_sum / ET_sum<br/>multiply 1000<br/>(kg C/kg -> g C/kg H2O)"]
+        WMASK["updateMask where ET_sum &gt; 0<br/>(avoid divide by zero)"]
+        WCLIP["clip to thailand<br/>rename WUE"]
+        WUE --> WMASK --> WCLIP
+    end
+
+    WCLIP --> STATS["reduceRegion<br/>mean / min / max<br/>scale 1000, bestEffort<br/>-> print + panel value"]
+    WCLIP --> MAPID["getMapId with vis params<br/>min 0, max 4<br/>palette RdYlGn<br/>-> tile URL"]
+
+    subgraph OUT["4 - Build output"]
+        HTMLGEN["fill HTML template:<br/>tile URL, boundary GeoJSON,<br/>legend, mean, year, timestamp"]
+        WRITE["write WUE.html"]
+        HTMLGEN --> WRITE
+    end
+
+    STATS --> HTMLGEN
+    MAPID --> HTMLGEN
+    BND["thailand.simplify 1000<br/>-> inline boundary GeoJSON"] --> HTMLGEN
+    AOI -.-> BND
+
+    WRITE --> VIEW["Open WUE.html in browser<br/>Leaflet + Google Satellite basemap<br/>WUE layer + legend + boundary"]
+    VIEW --> ENDN([End])
+
+    NOTE["Note: GEE tile URL expires in hours/days.<br/>Re-run WUE.py to refresh the layer."]
+    MAPID -.-> NOTE
+
+    classDef data fill:#e8f0fe,stroke:#3b82f6,color:#1e3a8a;
+    classDef proc fill:#e6f4ea,stroke:#1a9850,color:#14532d;
+    classDef out fill:#fef7e0,stroke:#f59e0b,color:#78350f;
+    classDef note fill:#fde8e8,stroke:#d73027,color:#7f1d1d;
+
+    class ET_COL,GPP_COL,AOI,BND data;
+    class ET_FIL,ET_MASK,ET_SUM,ET_SCALE,GPP_FIL,GPP_MASK,GPP_SUM,GPP_SCALE,WUE,WMASK,WCLIP,STATS,MAPID,AUTH,CFG proc;
+    class HTMLGEN,WRITE,VIEW out;
+    class NOTE note;
